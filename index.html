@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><!--
+=====================================================================
+ КАК УСТРОЕН ФАЙЛ (4 блока, сверху вниз)
+ 1) СТИЛИ (между тегами style)  — оформление. Цвета заданы переменными в начале (--ac = основной цвет).
+ 2) ЗАГОЛОВОК (тег header)      — название страницы. Кнопки модулей создаются автоматически.
+ 3) СКРИПТ, БЛОК «ДАННЫЕ»       — ВЕСЬ КОНТЕНТ: теория, тесты, кейсы.
+    >>> Редактировать нужно ТОЛЬКО его. Инструкция — внутри блока. <<<
+ 4) СКРИПТ, БЛОК «ДВИЖОК»       — код, который рисует страницу и считает результат.
+    Без необходимости не трогать.
+=====================================================================
+-->
+<title>Школа руководителя: теория, тесты, кейсы</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&family=PT+Serif:wght@700&display=swap">
+<style>
+/* ===== 1. ОФОРМЛЕНИЕ =====
+   Цвета:
+ --bg фон страницы,
+ --sf фон карточек,
+ --tx текст,
+ --mu серый текст,
+ --ac основной цвет (кнопки, акценты), 
+ --ok/--okb верный ответ, 
+ --no/--nob неверный.
+   Тёмная тема продублирована ниже (media и data-theme=dark): меняйте цвета в обоих местах. */
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--w:1100px; /* ширина содержимого страницы (меню, модули, вкладки, подвал); было 860px */
+--bg:#FAF5EE;
+--sf:#FFFFFF;
+--tx:#4E0F1A;
+--mu:#3B0A12;
+--ac:#4E0F1A;
+--ok:#cee1df;
+--okb:#cee1df;
+--no:#f4cccc;
+--nob:#f4cccc;
+--bd:#d5dedc}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#FAF5EE;--sf:#FFFFFF;--tx:#4E0F1A;--mu:#3B0A12;--ac:#4E0F1A;--ok:#cee1df;--okb:#cee1df;--no:#f4cccc;--nob:#f4cccc;--bd:#2c3a3d}}
+:root[data-theme=dark]{--bg:#121a1c;--sf:#FFFFFF;--tx:#4E0F1A;--mu:#3B0A12;--ac:#4E0F1A;--ok:#cee1df;--okb:#cee1df;--no:#ff8a80;--nob:#3b1f1d;--bd:#2c3a3d}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:#F6EBE3 linear-gradient(135deg,#F8EDE3 0%,#F2DFE0 48%,#D8E8E5 100%) no-repeat;min-height:100vh;color:var(--tx);font:16px/1.55 "PT Sans",system-ui,sans-serif}
+/* верхнее меню: ОДНА строка — логотип | разделы | пользователь.
+   Высота меню задаётся min-height и padding в .top-inner; ширина содержимого — max-width. */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;padding:14px 16px;background:transparent}
+.top-inner{max-width:calc(var(--w,860px) - 32px);
+margin:auto;
+padding:6px 10px 6px 24px;
+min-height:56px;
+background:#3f0d0d;
+border-radius:999px;
+box-shadow:0 8px 24px rgba(78,15,26,.22);
+display:flex;
+flex-wrap:nowrap;
+align-items:center;gap:8px}
+
+.top img{order:1;
+width:112px;
+height:auto;
+flex:none;
+object-fit:contain}
+
+.brand{font:700 20px/1 "PT Serif",Georgia,serif;color:#FFFFFF;letter-spacing:.02em}
+/* заглавный блок: крупный заголовок и картинка рядом */
+
+h1{font:700 clamp(34px,7vw,60px)/1.1 "PT Serif",Georgia,serif;margin:0;color: #ffffff;}
+nav{display:flex;gap:6px;overflow-x:auto;padding:12px 16px;max-width:var(--w,860px);margin:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}nav::-webkit-scrollbar{display:none}
+main{max-width:var(--w,860px);margin:auto;padding:0 16px 40px}
+h2{font:700 21px/1.25 "PT Serif",Georgia,serif;margin:8px 0 12px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+details{background:var(--sf);border:1px solid var(--bd);border-radius:8px;margin-bottom:8px;padding:10px 14px}
+summary{font-weight:700;cursor:pointer}details p{margin:8px 0 2px}
+.q{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:12px}
+.q b{display:block;margin-bottom:8px}
+label{display:block;padding:7px 10px;border:1px solid var(--bd);border-radius:6px;margin-bottom:6px;cursor:pointer}
+label.ok{background:var(--okb);border-color:var(--ok)}label.no{background:var(--nob);border-color:var(--no)}
+.ex{font-size:14px;color:var(--mu);margin-top:6px}
+.res{background:var(--sf);border:2px solid var(--ac);border-radius:10px;padding:16px;margin:14px 0;font-size:18px}
+.res strong{font:700 30px "PT Serif",serif;color:var(--ac)}
+.sit{background:var(--sf);border-left:4px solid var(--ac);padding:12px 14px;border-radius:0 8px 8px 0;margin-bottom:12px}
+/* слайды: листаются свайпом, стрелками на экране или клавишами ← → */
+.sl{position:relative;margin:10px 0 4px}
+.st{display:flex;align-items:center;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;border:1px solid var(--bd);border-radius:8px;background:#fff}
+.st::-webkit-scrollbar{display:none}
+.st img{flex:none;width:100%;height:auto;display:block;scroll-snap-align:center;scroll-snap-stop:always}
+.sl .pv,.sl .nx{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:50%;background:var(--ac);color:var(--sf);font:700 24px/1 "PT Sans";cursor:pointer;opacity:.85;padding:0}
+.sl .pv{left:8px}.sl .nx{right:8px}
+.sl .pv:disabled,.sl .nx:disabled{opacity:.25;cursor:default}
+.sl .cn{position:absolute;right:10px;bottom:10px;background:var(--ac);color:var(--sf);font-size:13px;padding:2px 10px;border-radius:12px}
+.fm input{display:block;width:100%;padding:10px;margin:0 0 10px;border:1px solid var(--bd);border-radius:6px;font:inherit;color:var(--tx);background:var(--sf)}
+/* ===== Блок пользователя в верхнем меню: аватар + имя + кнопка «Сменить» ===== */
+.user{order:3;margin-left:auto;flex:none;display:flex;align-items:center;gap:8px;min-width:0;
+  padding:3px 4px 3px 3px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.22)}
+.user[hidden]{display:none}
+.ava{flex:none;width:32px;height:32px;border-radius:50%;background:#FAF5EE;color:#4E0F1A;
+  display:grid;place-items:center;font:700 13px/1 "PT Sans",sans-serif;letter-spacing:.02em}
+.uinfo{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.uname{color:#fff;font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.ushop{color:rgba(255,255,255,.72);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92px}
+.swap svg{width:14px;height:14px;flex:none}
+
+/* ===== Разделы верхнего меню: Продавцам / Администратору / Супервайзеру ===== */
+.roles{order:2;flex:1 1 auto;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0;padding:2px 0}
+.roles::-webkit-scrollbar{display:none}
+.roles[hidden]{display:none}
+
+/* ===== ЕДИНЫЙ СТИЛЬ КНОПОК (как в верхнем меню) =====
+   Все кнопки страницы: «таблетка», жирный шрифт, одинаковая высота.
+   Обычная = контур, активная / главная = залитая.
+   Размеры и цвета меняются только здесь. */
+.btn,.fbtn,nav button,.tabs button,.chips button,.swap,.roles button{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:none;
+  min-height:40px;padding:0 16px;border-radius:999px;border:1px solid var(--ac);
+  background:transparent;color:var(--ac);font:700 15px/1 "PT Sans",sans-serif;
+  text-decoration:none;cursor:pointer;transition:background .15s,color .15s,transform .1s}
+.btn:active,.fbtn:active,nav button:active,.tabs button:active,.chips button:active,.swap:active,.roles button:active{transform:scale(.97)}
+.btn:disabled,.fbtn:disabled{opacity:.5;cursor:default}
+/* контурные: подсветка при наведении */
+nav button:hover,.tabs button:hover,.chips button:hover,.fbtn.alt:hover{background:rgba(78,15,26,.08)}
+/* залитые: главная кнопка и выбранный пункт */
+.btn,.fbtn,nav button[aria-current=true],.tabs button[aria-selected=true],.chips button[aria-pressed=true]{background:var(--ac);color:var(--sf)}
+.btn:hover,.fbtn:hover,nav button[aria-current=true]:hover,.tabs button[aria-selected=true]:hover,.chips button[aria-pressed=true]:hover{background:#6a1a28}
+.fbtn.alt{background:transparent;color:var(--ac)}
+.fbtn.del{background:transparent;color:#B3261E;border-color:#B3261E}.fbtn.del:hover{background:rgba(179,38,30,.08)}
+/* кнопки внутри верхнего меню (на тёмном фоне) */
+.roles button{min-height:40px;padding:0 13px;font-size:14px;border-color:rgba(255,255,255,.28);color:#fff}
+.roles button:hover{background:rgba(255,255,255,.14)}
+.roles button[aria-current=true]{background:#FAF5EE;color:#4E0F1A;border-color:#FAF5EE}
+.swap{min-height:32px;padding:0 12px;border:0;background:#FAF5EE;color:#4E0F1A;font-size:13px}
+.swap:hover{background:#fff}
+.swap:focus-visible,.roles button:focus-visible{outline:3px solid #fff;outline-offset:2px}
+/* выбор теста (основной / загруженные) */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+/* кнопка «Выберите файл» в формах — в том же стиле */
+input[type=file]::file-selector-button{margin-right:12px;padding:9px 16px;border:1px solid var(--ac);border-radius:999px;background:transparent;color:var(--ac);font:700 14px/1 "PT Sans",sans-serif;cursor:pointer}
+input[type=file]::file-selector-button:hover{background:rgba(78,15,26,.08)}
+/* ===== Вкладка «Материалы»: карточки файлов ===== */
+.fc{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px}
+.fi{flex:none;width:46px;height:52px;border-radius:8px;display:grid;place-items:center;color:#fff;font:700 12px/1 "PT Sans",sans-serif;letter-spacing:.03em}
+.t-ppt{background:#C4492B}.t-pdf{background:#B3261E}.t-doc{background:#2B5CC4}.t-xls{background:#1E7A46}.t-img{background:#6B6B6B}
+.fb{flex:1 1 180px;min-width:0}.fb b{display:block;overflow-wrap:anywhere}.fb .ex{margin:2px 0 0;overflow-wrap:anywhere}
+.fa{display:flex;gap:8px;flex-wrap:wrap}
+.edbar a,.ex a{color:var(--ac);font-weight:700}
+.emb{position:relative;width:100%;border:1px solid var(--bd);border-radius:8px;overflow:hidden;background:#fff;margin-top:8px}
+.emb.w{aspect-ratio:16/9;min-height:220px}.emb.t{height:min(75vh,640px)}
+.emb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.emb-img{display:block;width:100%;height:auto;border-radius:8px;margin-top:8px}
+.fmsg{min-height:20px;font-size:14px;margin:0 0 8px;color:var(--mu)}
+.edbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+@media(max-width:760px){.fa{width:100%}.fa .fbtn{flex:1}}
+.empty{background:var(--sf);border:1px dashed var(--bd);border-radius:10px;padding:22px 16px;text-align:center;color:var(--mu);margin-top:8px}
+
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+header.hero {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+max-width: none;
+box-sizing: border-box;
+  height: 300px;
+  margin: 0px auto;
+  padding: 28px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: none;
+}
+
+header.hero::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+ inset: 0;
+  background: url("images/fon.png") center / cover no-repeat;
+  border-radius: 0px;
+}
+
+header.hero h1,
+header.hero img {
+  position: relative;
+left: 200px; /* сдвинуть вправо */
+}
+
+header.hero img {
+  display: block;
+  width: 209px;
+  height: auto;
+  flex: none;
+  border-radius: 12px;
+  transform: translateX(-450px);
+}
+
+/* ===== ТЕЛЕФОН / ПЛАНШЕТ: на узких экранах сдвиги убираем, всё выстраивается в одну строку ===== */
+@media (max-width: 760px) {
+  header.hero {
+    height: auto;
+    min-height: 190px;
+    padding: 22px 16px;
+    gap: 12px;
+    justify-content: space-between;
+  }
+
+  header.hero::before { inset: 0; }
+
+  header.hero h1,
+  header.hero img {
+    left: 0;
+    transform: none;
+  }
+
+  header.hero h1 {
+    font-size: clamp(26px, 8vw, 40px);
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  header.hero img {
+    width: 36%;
+    max-width: 150px;
+  }
+
+  main { padding: 0 12px 32px; }
+  nav { padding: 10px 12px; }
+  .tabs button { white-space: nowrap; }
+  label { padding: 11px 12px; }
+  .btn { width: 100%; min-height: 46px; }
+  .res strong { font-size: 26px; }
+  .sl .pv, .sl .nx { width: 36px; height: 36px; }
+}
+
+/* ===== Режим редактора: неяркая кнопка в строке вкладок, всплывающие формы, отзыв ===== */
+/* «Теория»: презентация слева (крупно), разделы справа; на узком экране — друг под другом.
+   Соотношение колонок — первое число в grid-template-columns (1.6fr : 1fr). */
+.th2{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:16px;align-items:start}
+.thp{position:sticky;top:72px;max-height:calc(100vh - 90px);overflow:auto}
+.thp .emb.w{min-height:300px}
+.th2 details{margin-bottom:10px}
+@media (max-width:860px){.th2{grid-template-columns:minmax(0,1fr)}.thp{position:static;max-height:none;overflow:visible}.thp .emb.w{min-height:220px}}
+/* картинки в разделах теории: небольшие, не на всю ширину; по клику открываются крупно */
+.timg{display:block;max-width:min(100%,520px);max-height:380px;width:auto;height:auto;object-fit:contain;margin:10px 0;
+  border:1px solid var(--bd);border-radius:8px;background:#fff;cursor:zoom-in}
+.ithumbs{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 8px}
+.ith{position:relative}
+.ith img{display:block;height:72px;width:auto;border:1px solid var(--bd);border-radius:6px;background:#fff}
+.ith button{position:absolute;top:-7px;right:-7px;width:22px;height:22px;padding:0;border:0;border-radius:50%;background:var(--ac);color:var(--sf);font:700 14px/1 sans-serif;cursor:pointer}
+dialog.dlg.zoom{width:auto;max-width:calc(100% - 24px)}
+.zimg{display:block;max-width:100%;max-height:calc(100vh - 130px);margin:0 auto;border-radius:6px}
+/* главная (приветственная) страница */
+.hwel{margin:0 0 26px}
+.hwel h2{margin:0 0 10px;font:700 28px/1.25 "PT Serif",Georgia,serif}
+.hwel p{margin:0 0 8px;font-size:17px}
+.hwel .btn{margin-top:10px}
+.hcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:8px}
+.hcard{display:flex;flex-direction:column;gap:8px;text-align:left;padding:18px 20px;border:1px solid #eadfd3;border-radius:14px;background:#FBF6F0;color:var(--tx);font:inherit;cursor:pointer;transition:box-shadow .15s,border-color .15s}
+.hcard:hover:not(:disabled){border-color:var(--ac);box-shadow:0 4px 14px rgba(78,15,26,.12)}
+.hcard b{font:700 20px/1.25 "PT Serif",Georgia,serif}
+.hcard span{color:var(--mu);font-size:14px}
+.hcard:disabled{opacity:.6;cursor:default}
+.hbar{height:6px;border-radius:3px;background:#e6d8ca;overflow:hidden}.hbar i{display:block;height:100%;background:var(--ac)}
+.hrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin:10px 0 8px;align-items:start}
+.hrow.one{grid-template-columns:minmax(0,1fr)}
+.hbox{background:#FBF6F0;border:1px solid #eadfd3;border-radius:14px;padding:18px 20px}
+.hbox h3{margin:0 0 10px;font:700 20px/1.25 "PT Serif",Georgia,serif}
+.hbox p{margin:0 0 8px;font-size:16px}
+.hnews{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.hnews button{width:100%;display:flex;gap:12px;align-items:baseline;text-align:left;padding:8px 10px;border:0;border-radius:8px;background:transparent;color:var(--tx);font:inherit;font-size:15px;line-height:1.35;cursor:pointer}
+.hnews button:hover{background:rgba(78,15,26,.07)}
+.hnews time{flex:none;min-width:6.2em;color:var(--mu);font-size:13px}
+.hnew{display:inline-block;margin-left:4px;padding:1px 8px;border-radius:999px;background:var(--ac);color:var(--sf);font-size:11px;font-weight:700;vertical-align:1px}
+@media (max-width:860px){.hrow{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:520px){.hwel h2{font-size:23px}}
+
+/* ===== ГЛАВНАЯ: градиентный фон, верхний блок с приветствием и фото, ниже белая панель =====
+   Работает только на главной (у body класс «home»). Старая шапка и строка модулей на ней скрыты. */
+body.home header.hero,body.home nav{display:none}
+body.home main{padding-top:10px;padding-bottom:48px}
+/* КАРТИНКА В ВЕРХНЕМ БЛОКЕ — меняйте три значения ниже:
+   --img-w размер (ширина; высота подстроится сама), --img-x сдвиг вправо(+)/влево(−), --img-y сдвиг вниз(+)/вверх(−).
+   Положение по вертикали: align-items в этом же правиле (flex-start — сверху, center — по центру, flex-end — снизу). */
+.hhero{
+--img-w:clamp(350px,20vw,210px);
+--img-x:0px;
+--img-y:0px;
+display:flex;
+align-items:stretch;
+justify-content:space-between;
+gap:24px;min-height:220px;
+margin:0 0 20px;
+padding:0 0 0 48px;
+overflow:hidden;
+border-radius:28px;
+color:#fff;
+  background:radial-gradient(circle at 88% 10%,rgba(255,255,255,.14),transparent 42%),linear-gradient(282deg, #770d0d 0%, #3f0d0d 100%);box-shadow:0 14px 36px rgba(78,15,26,.22)}
+.hhero h1{align-self:center;min-width:0;margin:0;padding:32px 0;font:700 clamp(28px,4.4vw,48px)/1.15 "PT Serif",Georgia,serif;color:#fff;text-wrap:balance;overflow-wrap:break-word}
+.hhero img{flex:none;display:block;width:var(--img-w);transform:translate(var(--img-x),var(--img-y));align-self:stretch;height:auto;object-fit:cover;object-position:center top}
+.hpanel{background:#fff;border-radius:28px;padding:36px 40px 32px;box-shadow:0 10px 34px rgba(78,15,26,.10)}
+.hpanel .hcards{margin-bottom:14px}
+.hpanel .tabs{margin-bottom:0}
+@media (max-width:520px){.hhero{--img-w:34%;min-height:150px;gap:14px;padding:0 0 0 20px;border-radius:22px}.hhero h1{padding:22px 0}.hpanel{padding:24px 18px;border-radius:22px}body.home main{padding-top:2px}}
+button.ghost{display:inline-flex;align-items:center;gap:6px;flex:none;min-height:40px;padding:0 10px;border:0;border-radius:999px;
+  background:transparent;color:var(--mu);font:600 13px/1 "PT Sans",sans-serif;cursor:pointer;transition:background .15s,color .15s}
+button.ghost svg{width:15px;height:15px;flex:none}
+button.ghost:hover,button.ghost.on{color:var(--ac)}
+button.ghost:hover{background:rgba(78,15,26,.07)}
+.tabs button.ghost{margin-left:auto}
+.mbar{display:flex;gap:4px;flex-wrap:wrap;margin:-4px 0 8px}
+.dim{opacity:.55}
+.tact{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tact .fbtn{min-height:34px;font-size:13px;padding:0 14px}
+.fbk{max-width:var(--w,860px);margin:0 auto;padding:4px 16px 32px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:14px}
+.fbk[hidden]{display:none}
+dialog.dlg{border:0;border-radius:14px;padding:0;width:min(560px,calc(100% - 24px));max-height:calc(100% - 24px);background:var(--sf);color:var(--tx);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+dialog.dlg::backdrop{background:rgba(30,6,10,.55)}
+.dh{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 6px;margin:0}
+.dh h3{margin:0;font:700 19px/1.25 "PT Serif",Georgia,serif}
+.dh button{border:0;background:transparent;color:var(--mu);font:400 28px/1 "PT Sans",sans-serif;cursor:pointer;padding:0 6px}
+.db{padding:6px 16px 16px;overflow:auto;max-height:calc(100vh - 110px)}
+.dlg label.fl,.dlg div.fl{display:block;padding:0;border:0;border-radius:0;margin:0 0 10px;cursor:default;font-weight:700;font-size:14px}
+.dlg input:not([type=radio]),.dlg textarea,.dlg select{display:block;width:100%;margin-top:4px;padding:10px;border:1px solid var(--bd);border-radius:6px;font:400 16px/1.4 "PT Sans",sans-serif;color:var(--tx);background:var(--sf)}
+.dlg textarea{resize:vertical;min-height:120px}
+.dlg input:disabled{opacity:.6}
+.dact{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.rate{margin:4px 0 0}.rate button{min-width:40px;padding:0}
+.copt{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;margin:0 0 10px;padding:10px;border:1px solid var(--bd);border-radius:8px}
+.copt input[type=radio]{margin-top:12px;accent-color:var(--ac)}
+.copt input:not([type=radio]){margin-top:0}.copt input+input{margin-top:6px}
+/* телефон: меню остаётся в одну строку — у пользователя остаётся только аватар и значок «Сменить» */
+@media (max-width: 820px) {
+  .uinfo, .swap span { display: none; }
+  .swap { padding: 0 10px; }
+}
+
+@media (max-width: 520px) {
+  .top-inner { padding: 6px 8px 6px 16px; gap: 8px; }
+  .top img { width: 84px; }
+  .roles button { font-size: 14px; padding: 0 14px; }
+  .tabs button { padding: 0 12px; font-size: 14px; }
+  button.ghost span { display: none; }
+  .tabs button.ghost { padding: 0 8px; }
+  .top { position: static; padding: 10px 12px; }
+}
+
+
+</style></head><body>
+<!-- ===== 2. ВЕРХНЕЕ МЕНЮ И ЗАГОЛОВОК =====
+ Логотип: замените блок <svg> на <img src="logo.png" alt="Логотип"> (или вставьте свой SVG).
+ Картинка справа от заголовка: замените <svg class="hero"> на <img class="hero" src="picture.jpg" alt="">. -->
+<div class="top">
+  <div class="top-inner">
+    <img src="images/Aa.png" alt="">
+    <div class="user" id="user" hidden></div>
+    <div class="roles" id="roles" role="tablist" aria-label="Разделы" hidden></div>
+  </div>
+</div><header class="hero">
+  <h1>Школа <br>руководителя</h1>
+  <img src="56.png" alt="">
+</header>
+<nav id="nav" aria-label="Модули"></nav><main id="m"></main>
+<footer class="fbk" id="fbk" hidden><span>Нашли ошибку или есть идея?</span><button type="button" class="fbtn alt" id="fbb">Оставить отзыв</button></footer>
+
+<script>
+/* =====================================================================
+   3. ДАННЫЕ — ВСЁ СОДЕРЖАНИЕ ТРЕНАЖЁРА
+   =====================================================================
+   Структура: D = список модулей. Каждый модуль состоит из трёх частей:
+
+   n  : название модуля (показывается в заголовке)
+   th : ТЕОРИЯ — список тем в формате  ["Название темы", "Текст темы"],
+        СЛАЙДЫ / КАРТИНКИ (необязательно): третьим элементом добавьте список картинок —
+        ["Название темы", "Текст темы", ["slide1.jpg","slide2.jpg","slide3.jpg"]],
+        они покажутся под текстом и будут листаться свайпом, стрелками или клавишами ← →.
+        Если нужны только слайды без текста — оставьте текст пустым: ["Название темы", "", ["slide1.jpg","slide2.jpg"]].
+        Одна картинка тоже подойдёт: ["slide1.jpg"].
+        Как получить слайды: в PowerPoint «Файл → Экспорт → Изменить тип файла → JPEG/PNG → Все слайды»,
+        положите файлы рядом с этой страницей и укажите имена (например "slides/1.jpg").
+   q  : ТЕСТ   — список вопросов в формате
+        ["Вопрос", ["вариант 0","вариант 1","вариант 2"], НОМЕР_ВЕРНОГО, "Пояснение"],
+        НОМЕР_ВЕРНОГО считается с нуля: первый вариант = 0, второй = 1, третий = 2.
+         ТЕСТЫ МОЖНО И НЕ ПИСАТЬ В КОДЕ: вкладка «Тест» → «Режим редактора» → загрузить таблицу Excel/CSV
+         (понадобится apps_script_tests.gs, см. инструкцию в этом файле).
+   k  : КЕЙС   — ["Описание ситуации", [
+          ["Вариант решения", 0, "Разбор: почему не лучший"],
+          ["Вариант решения", 1, "Разбор: почему верный"],   // 1 = верный, 0 = неверный
+        ]]
+
+   ПРАВИЛА (иначе страница перестанет работать):
+   • Каждый элемент заканчивается запятой, кроме последнего в списке.
+   • Внутри текста НЕ используйте прямые кавычки " — вместо них пишите «ёлочки».
+   • В тексте теории можно использовать теги: <b>жирный</b>, <i>курсив</i>, <br> (перенос строки).
+   • В кейсе должен быть ровно один верный вариант (с цифрой 1).
+
+   КАК ДОБАВИТЬ:
+   • тему теории   — скопируйте любую строку ["Название","Текст"], внутри th:[ ... ]
+   • вопрос теста  — скопируйте любую строку вопроса, внутри q:[ ... ]
+   • новый модуль  — скопируйте весь блок от { до }, и вставьте после запятой в конце предыдущего
+   ===================================================================== */
+/* ╔═══ РАЗДЕЛЫ ВЕРХНЕГО МЕНЮ ═══╗
+   Для каждого раздела перечислены номера модулей, которые в нём показываются.
+   Чтобы перенести модуль в другой раздел — поменяйте номер в нужном списке.
+   Пустой список [] = раздел в разработке (покажется заглушка). */
+const ROLES=[
+ {id:'seller',t:'Продавцам',mods:[]},
+ {id:'admin',t:'Администратору',mods:['2.1','2.2','2.3','2.4']},
+ {id:'sup',t:'Супервайзеру',mods:['1.1','1.2','1.3','1.4','1.5','1.6','1.7']}
+];
+
+/* МОДУЛИ В КОДЕ УДАЛЕНЫ: теперь модули, теорию, тесты, кейсы и материалы создаёт редактор прямо на странице
+   (кнопка «Режим редактора» → «+ Модуль»). Если нужно вернуть прежние модули из кода — используйте файл index_backup_with_modules.html. */
+const D0=[];
+let D=D0.slice(); /* D = модули из кода + модули, созданные на странице (собирается в buildD) */
+/* =====================================================================
+   4. ДВИЖОК — код страницы (редактировать не нужно)
+   nav()  — рисует кнопки модулей
+   draw() — рисует выбранный модуль: вкладки «Теория / Тест / Кейс»
+   ===================================================================== */
+const m=document.getElementById('m'),nv=document.getElementById('nav');let cur=0,tab='th',view='home'; /* view: 'home' — главная, 'mod' — модули выбранного раздела */
+const CFG_URL='https://script.google.com/macros/s/AKfycbzh88wLODvBD8fdjc_g24El9MEzlLEdys_QdiwYGloNCDKKYxOjmROl6dRmxOvy9EYo/exec';/* вставьте сюда адрес веб-приложения Google Apps Script (см. инструкцию) */
+const PASS=70;
+const ls={g(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch(e){return d}},s(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+let U=ls.g('shk_u',null),P=ls.g('shk_p',{});
+let R=ls.g('shk_r','admin');if(!ROLES.some(r=>r.id==R))R=ROLES[0].id;
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const code=d=>d.n.split(' ')[0];
+/* ===== Модули и разделы, созданные на странице (хранятся в таблице; см. apps_script_tests.gs) ===== */
+let MODS=ls.g('shk_m',[]),TOPICS=ls.g('shk_tp',[]);
+const cmpCode=(a,b)=>{const x=a.split('.').map(Number),y=b.split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0};
+const nh=d=>d.page?esc(d.n):d.n;
+function buildD(){D=D0.concat(MODS.filter(m=>m&&m.code&&!D0.some(x=>code(x)==String(m.code))).map(m=>({n:m.code+' '+m.title,th:[],q:[],page:true,id:m.id,role:m.role,ttl:m.title,cd:String(m.code),
+  kRaw:m.k||null,k:m.k?[esc(m.k[0]),m.k[1].map(o=>[esc(o[0]),o[1]?1:0,esc(o[2])])]:null})))}
+const inRole=rid=>{const r=ROLES.find(r=>r.id==(rid||R))||ROLES[0];return D.map((d,i)=>i).filter(i=>D[i].page?D[i].role==r.id:r.mods.includes(code(D[i]))).sort((a,b)=>cmpCode(code(D[a]),code(D[b])))};
+function setD(keepN){const k=keepN!==undefined?keepN:(cur>=0&&D[cur]?D[cur].n:null);buildD();const i=k==null?-1:D.findIndex(x=>x.n==k),l=inRole();cur=l.includes(i)?i:(l.length?l[0]:-1)}
+buildD();
+const initials=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+/* верхнее меню: блок пользователя и разделы */
+function renderTop(){const u=document.getElementById('user'),r=document.getElementById('roles'),fk=document.getElementById('fbk');if(fk)fk.hidden=!U||!CFG_URL;
+ if(!U){u.hidden=true;r.hidden=true;return}
+ u.hidden=false;r.hidden=false;u.title=U.name+' · '+U.shop;
+ u.innerHTML='<span class="ava" aria-hidden="true">'+esc(initials(U.name))+'</span><span class="uinfo"><span class="uname">'+esc(U.name)+'</span><span class="ushop">'+esc(U.shop)+'</span></span><button class="swap" type="button" aria-label="Сменить пользователя"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4"/><path d="M3 11V9a2 2 0 0 1 2-2h16"/><path d="M7 21l-4-4 4-4"/><path d="M21 13v2a2 2 0 0 1-2 2H3"/></svg><span>Сменить</span></button>';
+ u.querySelector('.swap').onclick=()=>{if(confirm('Сменить пользователя? Прогресс на этом устройстве будет сброшен.'))logout()};
+ r.innerHTML='';{const b=document.createElement('button');b.type='button';b.textContent='Главная';b.setAttribute('aria-current',view=='home');b.onclick=goHome;r.appendChild(b)}
+ ROLES.forEach(x=>{const b=document.createElement('button');b.type='button';b.textContent=x.t;b.setAttribute('role','tab');b.setAttribute('aria-current',view!='home'&&x.id==R);b.onclick=()=>goRole(x.id);r.appendChild(b)})}
+function goHome(){view='home';renderTop();nav();draw();window.scrollTo({top:0})}
+function goRole(id){ls.s('shk_seen',Date.now());R=id;ls.s('shk_r',R);const l=inRole();cur=l.length?l[0]:-1;tab='th';view='mod';renderTop();nav();draw();window.scrollTo({top:0})}
+const goCode=c=>{const d=D.find(x=>code(x)==String(c));if(d)goModule(d.n)};
+const roleOf=d=>d.page?d.role:(ROLES.find(r=>r.mods.includes(code(d)))||{}).id;
+function goModule(n){ls.s('shk_seen',Date.now());const i=D.findIndex(x=>x.n==n),r=i<0?null:roleOf(D[i]);if(!r)return;R=r;ls.s('shk_r',R);cur=i;tab='th';view='mod';renderTop();nav();draw();window.scrollTo({top:0})}
+function send(){const q=ls.g('shk_q',[]);if(!CFG_URL||!q.length)return;ls.s('shk_q',[]);q.forEach(r=>fetch(CFG_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(r)}).catch(()=>{const z=ls.g('shk_q',[]);z.push(r);ls.s('shk_q',z)}))}
+function rec(mod,type,p){const t=P[mod]=P[mod]||{};t[type]=Math.max(t[type]||0,p);ls.s('shk_p',P);const q=ls.g('shk_q',[]);q.push({date:new Date().toLocaleString('ru-RU'),name:U.name,shop:U.shop,module:mod,type:type,percent:p,passed:p>=PASS?'да':'нет'});ls.s('shk_q',q);send();nav()}
+function logout(){ls.s('shk_u',null);ls.s('shk_p',{});U=null;P={};cur=0;setPin('');renderTop();start();return false}
+document.querySelector('.top img').onclick=()=>{if(U)goHome()};document.querySelector('.top img').style.cursor='pointer';
+function start(){if(U){view='home';const l=inRole();if(!l.includes(cur))cur=l.length?l[0]:-1;renderTop();nav();draw();send();loadFiles();loadTests();loadContent();return}document.body.classList.remove('home');renderTop();nv.innerHTML='';m.innerHTML='<h2>Регистрация</h2><div class="q fm"><p>Укажите данные, чтобы результаты обучения были засчитаны.</p><input id="fn" placeholder="Фамилия Имя" autocomplete="name"><input id="fs" placeholder="Магазин / город"><div id="fe" class="ex"></div><button class="btn" id="fg">Начать обучение</button></div>';document.getElementById('fg').onclick=()=>{const n=document.getElementById('fn').value.trim(),sh=document.getElementById('fs').value.trim();if(n.length<3||!sh){document.getElementById('fe').textContent='Заполните оба поля.';return}U={name:n,shop:sh};ls.s('shk_u',U);start()}}
+
+const passed=d=>Object.keys(P[d.n]||{}).some(k=>/^Тест/.test(k)&&P[d.n][k]>=PASS);
+function nav(){nv.innerHTML='';if(view=='home')return;inRole().forEach(i=>{const d=D[i];const b=document.createElement('button');b.textContent=(passed(d)?'✓ ':'')+'Модуль '+d.n.split(' ')[0];b.title=d.n;b.setAttribute('aria-current',i==cur);b.onclick=()=>{cur=i;tab='th';draw();nav()};nv.appendChild(b)});
+ if(PIN&&CFG_URL){const a=document.createElement('button');a.type='button';a.className='ghost';a.textContent='+ Модуль';a.onclick=()=>moduleDlg(null);nv.appendChild(a)}}
+/* слайды: строит блок-карусель из списка картинок и подключает листание */
+function slides(a){return '<div class="sl"><div class="st" tabindex="0" aria-label="Слайды">'+a.map((s,i)=>'<img src="'+s+'" alt="Слайд '+(i+1)+' из '+a.length+'" loading="lazy">').join('')+'</div><button class="pv" aria-label="Назад" disabled>‹</button><button class="nx" aria-label="Вперёд"'+(a.length<2?' disabled':'')+'>›</button><span class="cn">1 / '+a.length+'</span></div>'}
+function initSl(e){const s=e.querySelector('.st'),p=e.querySelector('.pv'),n=e.querySelector('.nx'),c=e.querySelector('.cn'),N=s.children.length;
+const upd=()=>{const i=Math.min(N-1,Math.round(s.scrollLeft/(s.clientWidth||1)));c.textContent=(i+1)+' / '+N;p.disabled=i==0;n.disabled=i==N-1};
+const go=k=>s.scrollBy({left:k*s.clientWidth,behavior:'smooth'});
+p.onclick=()=>go(-1);n.onclick=()=>go(1);s.onscroll=upd;
+s.onkeydown=ev=>{if(ev.key=='ArrowLeft'){ev.preventDefault();go(-1)}if(ev.key=='ArrowRight'){ev.preventDefault();go(1)}}}
+/* ===== ФАЙЛЫ МОДУЛЕЙ: хранятся на Google Диске, список — в таблице (через Apps Script) =====
+   place='theory' — презентация показывается прямо на странице во вкладке «Теория»;
+   place='files'  — обычный файл во вкладке «Материалы» (открыть / скачать). */
+let FILES=ls.g('shk_f',[]),FERR=false,FWHY='',PIN='',fbusy=false;
+try{PIN=sessionStorage.getItem('shk_pin')||''}catch(e){}
+const MAXMB=15,EXTS=['pptx','ppt','pdf','docx','doc','xlsx','xls','png','jpg','jpeg'];
+const api=o=>fetch(CFG_URL,{method:'POST',body:JSON.stringify(o)}).then(r=>r.json());
+function setPin(p){PIN=p;try{p?sessionStorage.setItem('shk_pin',p):sessionStorage.removeItem('shk_pin')}catch(e){}}
+function loadFiles(){if(!CFG_URL)return;const was=JSON.stringify(FILES),wasE=FERR;
+ fetch(CFG_URL+'?action=list').then(r=>r.text().then(t=>{let j;try{j=JSON.parse(t)}catch(e){throw new Error('сервер вернул не данные, а страницу: «'+t.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,90)+'» (HTTP '+r.status+')')}
+   if(!j.ok)throw new Error('скрипт вернул ошибку'+(j.error?': '+j.error:''));FILES=j.files||[];FERR=false;FWHY='';ls.s('shk_f',FILES)})).catch(e=>{FERR=true;FWHY=e&&e.name=='TypeError'?'нет связи со script.google.com (интернет, фильтр сети или блокировщик рекламы)':(e&&e.message)||'неизвестная ошибка'})
+ .then(()=>{if(U&&!fbusy&&(view=='home'||(cur>=0&&(tab=='f'||tab=='th')))&&(was!=JSON.stringify(FILES)||wasE!=FERR))draw()})}
+const fsize=b=>b>=1048576?(b/1048576).toFixed(1).replace('.',',')+' МБ':Math.max(1,Math.round(b/1024))+' КБ';
+const fext=n=>(String(n).split('.').pop()||'').toLowerCase();
+const fkind=e=>/^pptx?$/.test(e)?'ppt':e=='pdf'?'pdf':/^docx?$/.test(e)?'doc':/^xlsx?$/.test(e)?'xls':'img';
+const fok=f=>/^[\w-]+$/.test(f.fileId||'');
+const furl={view:f=>'https://drive.google.com/file/d/'+f.fileId+'/view',dl:f=>'https://drive.google.com/uc?export=download&id='+f.fileId,emb:f=>'https://drive.google.com/file/d/'+f.fileId+'/preview'};
+const fbtns=f=>'<a class="fbtn" target="_blank" rel="noopener" href="'+furl.view(f)+'">Открыть</a><a class="fbtn alt" href="'+furl.dl(f)+'">Скачать</a>'+(PIN?'<button class="fbtn del" type="button" data-del="'+esc(f.id)+'">Удалить</button>':'');
+/* карточка файла во вкладке «Материалы» */
+function fcard(f){if(!fok(f))return'';const e=fext(f.name),dt=new Date(f.date);
+ return '<div class="fc"><span class="fi t-'+fkind(e)+'" aria-hidden="true">'+esc(e.toUpperCase().slice(0,4))+'</span><div class="fb"><b>'+esc(f.title||f.name)+'</b><span class="ex">'+esc(f.name)+' · '+fsize(+f.size||0)+(isNaN(dt)?'':' · '+dt.toLocaleDateString('ru-RU'))+'</span></div><div class="fa">'+fbtns(f)+'</div></div>'}
+/* презентация, встроенная в «Теорию»: раскрывающийся блок, как у обычных тем */
+function tcard(f,open){if(!fok(f))return'';const k=fkind(fext(f.name)),t=esc(f.title||f.name);
+ const body=k=='img'?'<img class="emb-img" src="https://drive.google.com/thumbnail?id='+f.fileId+'&sz=w1600" alt="'+t+'" loading="lazy">'
+  :'<div class="emb '+(k=='ppt'?'w':'t')+'"><iframe src="'+furl.emb(f)+'" loading="lazy" allowfullscreen title="'+t+'"></iframe></div>';
+ return '<details'+(open?' open':'')+'><summary>'+t+'</summary>'+body+'<div class="fa" style="margin-top:10px">'+fbtns(f)+'</div></details>'}
+/* форма редактора (общая для «Теории» и «Материалов») */
+function edHtml(c,place){if(!CFG_URL||!PIN)return'';
+ const th=place=='theory';
+ return '<div class="q fm"><div class="edbar"><b>Редактор: '+(th?'презентация или документ в «Теорию»':'файл в «Материалы»')+'</b></div><input id="ft" maxlength="120" placeholder="Название'+(th?' темы':' материала')+' (необязательно)"><input id="ff" type="file" accept=".'+EXTS.join(',.')+'"><div class="ex" style="margin:0 0 10px">'+(th?'Презентация или документ покажутся прямо на странице. Для самого точного вида сохраните PowerPoint как PDF. ':'')+'PowerPoint, PDF, Word, Excel, картинки · до '+MAXMB+' МБ</div><div class="fmsg" id="fg" role="status"></div><button class="btn" id="fu" type="button">'+(th?'Добавить в «Теорию» модуля ':'Загрузить в модуль ')+esc(c)+'</button></div>'}
+/* вход в режим редактора и выход из него (общее для «Теории», «Материалов» и «Теста») */
+function wireAuth(){
+ const fe=document.getElementById('fe');if(fe)fe.onclick=ev=>{ev.preventDefault();const p=prompt('Введите код редактора');if(!p)return;api({action:'check',pin:p.trim()}).then(j=>{if(j.ok){setPin(p.trim());nav();draw()}else alert('Неверный код.')}).catch(()=>alert('Не удалось проверить код. Проверьте, что в Google Apps Script опубликована новая версия скрипта.'))};
+ const fx=document.getElementById('fx');if(fx)fx.onclick=ev=>{ev.preventDefault();setPin('');nav();draw()};
+}
+function wireFiles(v,c,place){
+ const say=t=>{const g=document.getElementById('fg');if(g)g.textContent=t};
+ v.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(!confirm('Удалить файл? Он попадёт в корзину Google Диска.'))return;b.disabled=true;
+  api({action:'delete',pin:PIN,id:b.dataset.del}).then(j=>{if(j.ok){FILES=FILES.filter(x=>String(x.id)!=b.dataset.del);ls.s('shk_f',FILES);draw()}else{if(j.error=='pin')setPin('');alert('Не удалось удалить.');draw()}}).catch(()=>{alert('Нет связи с сервером.');b.disabled=false})});
+ const fu=document.getElementById('fu');if(fu)fu.onclick=()=>{const f=document.getElementById('ff').files[0],t=document.getElementById('ft').value.trim();
+  if(!f){say('Выберите файл.');return}
+  if(!EXTS.includes(fext(f.name))){say('Такой тип файла не разрешён.');return}
+  if(f.size>MAXMB*1048576){say('Файл больше '+MAXMB+' МБ. Сожмите его или сохраните презентацию в PDF.');return}
+  fbusy=true;fu.disabled=true;say('Загрузка… не закрывайте страницу.');
+  const rd=new FileReader();rd.onerror=()=>{fbusy=false;fu.disabled=false;say('Не удалось прочитать файл.')};
+  rd.onload=()=>{api({action:'upload',pin:PIN,place:place,module:c,title:t||f.name.replace(/\.[^.]+$/,''),name:f.name,mime:f.type||'application/octet-stream',data:String(rd.result).split(',')[1],by:U.name})
+   .then(j=>{fbusy=false;if(j.ok){FILES.push(j.file);ls.s('shk_f',FILES);draw();if(j.shared===false)alert('Файл загружен, но Google запретил общий доступ по ссылке. Другие пользователи его не откроют: проверьте настройки доступа Диска.')}
+    else{fu.disabled=false;if(j.error=='pin'){setPin('');alert('Код редактора больше не подходит. Войдите заново.');draw()}else say(j.error=='size'?'Файл слишком большой.':j.error=='type'?'Тип файла не разрешён.':'Ошибка загрузки.')}})
+   .catch(()=>{fbusy=false;fu.disabled=false;say('Нет связи с сервером. Проверьте интернет и что опубликована новая версия скрипта.')})};
+  rd.readAsDataURL(f)}}
+/* вкладка «Материалы» */
+function fileTab(d,v){const c=code(d),list=FILES.filter(f=>String(f.module)==c&&f.place!='theory'&&!isImg(f));
+ v.innerHTML=(FERR&&!FILES.length?'<div class="empty">Не удалось загрузить список файлов. Проверьте интернет.'+(FWHY?'<br><small>Причина: '+esc(FWHY)+'</small>':'')+'</div>':list.length?list.map(fcard).join(''):'<div class="empty">Материалов пока нет.</div>')+edHtml(c,'files');
+ wireFiles(v,c,'files')}
+/* ===== ЗАГРУЖАЕМЫЕ ТЕСТЫ =====
+   Редактор выбирает файл Excel (.xlsx, .xls) или CSV прямо на вкладке «Тест» — тест появляется у всех пользователей.
+   Формат таблицы (первая строка — заголовки, её можно оставить):
+   A «Вопрос» | B–F «Вариант 1…5» (от 2 до 5 заполненных) | G «Верный вариант» (номер: 1, 2, 3…) | H «Пояснение».
+   Загруженные тесты хранятся в таблице Google через Apps Script (файл apps_script_tests.gs). */
+let TESTS=ls.g('shk_t',[]),tsel={};
+const MAXQ=100,TEXTS=['xlsx','xls','csv'];
+function loadTests(){if(!CFG_URL)return;const was=JSON.stringify(TESTS);
+  fetch(CFG_URL+'?action=tests').then(r=>r.json()).then(j=>{if(!j.ok)throw 0;TESTS=j.tests||[];ls.s('shk_t',TESTS)}).catch(()=>{})
+  .then(()=>{if(U&&!fbusy&&(view=='home'||(cur>=0&&tab=='t'))&&was!=JSON.stringify(TESTS)&&!document.querySelector('#v input:checked'))draw()})}
+function csvRows(t){t=t.replace(/^\uFEFF/,'');const f=t.split(/\r?\n/)[0]||'',cnt=ch=>f.split(ch).length-1,dl=[';','\t',','].sort((a,b)=>cnt(b)-cnt(a))[0];
+  const rows=[];let r=[],c='',q=false;
+  for(let i=0;i<t.length;i++){const ch=t[i];
+   if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=ch}
+   else if(ch=='"')q=true;
+   else if(ch==dl){r.push(c);c=''}
+   else if(ch=='\n'||ch=='\r'){if(ch=='\r'&&t[i+1]=='\n')i++;r.push(c);c='';rows.push(r);r=[]}
+   else c+=ch}
+  if(c!==''||r.length){r.push(c);rows.push(r)}
+  return rows}
+const decodeBuf=b=>{try{return new TextDecoder('utf-8',{fatal:true}).decode(b)}catch(e){return new TextDecoder('windows-1251').decode(b)}};
+const needXlsx=()=>window.XLSX?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=ok;s.onerror=()=>no(new Error('xlsx'));document.head.appendChild(s)});
+function readTable(f){return new Promise((ok,no)=>{const rd=new FileReader();rd.onerror=()=>no(new Error('read'));
+  rd.onload=()=>{if(fext(f.name)=='csv')return ok(csvRows(decodeBuf(rd.result)));
+   needXlsx().then(()=>{const wb=XLSX.read(rd.result,{type:'array'});ok(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,defval:'',raw:false}))}).catch(()=>no(new Error('xlsx')))};
+  rd.readAsArrayBuffer(f)})}
+/* строки таблицы → вопросы в том же формате, что и в блоке «Данные»: [вопрос, [варианты], номер_верного_с_нуля, пояснение] */
+function parseTest(rows){const q=[],err=[];
+  rows.forEach((r,i)=>{r=r.map(x=>x==null?'':String(x).trim());if(r.every(x=>!x))return;
+   if(/^вопрос/i.test(r[0])&&!/^\d+$/.test(r[6]||''))return;
+   const n=i+1,o=[];for(let j=1;j<=5;j++)if(r[j])o.push([j,r[j]]);
+   const k=parseInt(r[6],10),at=o.findIndex(x=>x[0]==k);
+   if(!r[0])err.push('Строка '+n+': нет текста вопроса.');
+   else if(o.length<2)err.push('Строка '+n+': нужно минимум два варианта ответа.');
+   else if(at<0)err.push('Строка '+n+': в колонке «Верный вариант» укажите номер заполненного варианта (1–5).');
+   else q.push([r[0],o.map(x=>x[1]),at,r[7]||('Верный ответ: '+o[at][1])])});
+  if(!q.length&&!err.length)err.push('В файле не найдено ни одного вопроса.');
+  if(q.length>MAXQ)err.push('Слишком много вопросов: максимум '+MAXQ+'.');
+  return{q,err}}
+function tmplCsv(){const L=['Вопрос;Вариант 1;Вариант 2;Вариант 3;Вариант 4;Вариант 5;Верный вариант (номер);Пояснение',
+  'Что отличает руководителя от специалиста?;Больше личной экспертизы;Результат достигается через других людей;Меньше ответственности;;;2;Руководитель отвечает за результат команды.',
+  'Какой стиль подходит новичку?;Либеральный;Директивный;Отказ от управления;;;2;Неопытному сотруднику нужны чёткие указания.'];
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+L.join('\r\n')],{type:'text/csv;charset=utf-8'}));a.download='шаблон_теста.csv';document.body.appendChild(a);a.click();a.remove()}
+/* форма редактора на вкладке «Тест»: список загруженных тестов + загрузка нового */
+function tedHtml(c,list){if(!CFG_URL||!PIN)return'';
+  return '<div class="q fm" style="margin-top:14px"><div class="edbar"><b>Редактор: тесты модуля</b></div>'
+   +list.map(t=>{const dt=new Date(t.date);return '<div class="fc"><div class="fb"><b>'+esc(t.title)+'</b><span class="ex">Вопросов: '+t.q.length+(isNaN(dt)?'':' · '+dt.toLocaleDateString('ru-RU'))+'</span></div><div class="fa"><button class="fbtn del" type="button" data-tdel="'+esc(t.id)+'">Удалить</button></div></div>'}).join('')
+   +'<input id="tt" maxlength="120" placeholder="Название теста (необязательно)"><input id="tf" type="file" accept=".xlsx,.xls,.csv">'
+   +'<div class="ex" style="margin:0 0 10px">Таблица Excel или CSV: один вопрос в строке. Колонки: A — вопрос, B–F — варианты ответа (от 2 до 5), G — номер верного варианта, H — пояснение. До '+MAXQ+' вопросов.</div>'
+   +'<div class="fa" style="margin:0 0 10px"><button class="fbtn alt" id="tn" type="button">Скачать шаблон</button></div>'
+   +'<div class="fmsg" id="tg" role="status"></div><button class="btn" id="tu" type="button">Загрузить тест в модуль '+esc(c)+'</button></div>'}
+function wireTests(v,c){
+  const say=t=>{const g=document.getElementById('tg');if(g)g.textContent=t};
+  v.querySelectorAll('[data-tdel]').forEach(b=>b.onclick=()=>{if(!confirm('Удалить этот тест?'))return;b.disabled=true;
+   api({action:'test_delete',pin:PIN,id:b.dataset.tdel}).then(j=>{if(j.ok){TESTS=TESTS.filter(x=>String(x.id)!=b.dataset.tdel);ls.s('shk_t',TESTS);delete tsel[c];draw()}else{if(j.error=='pin')setPin('');alert('Не удалось удалить.');draw()}}).catch(()=>{alert('Нет связи с сервером.');b.disabled=false})});
+  const tn=document.getElementById('tn');if(tn)tn.onclick=tmplCsv;
+  const tu=document.getElementById('tu');if(tu)tu.onclick=()=>{const f=document.getElementById('tf').files[0],t=document.getElementById('tt').value.trim();
+   if(!f){say('Выберите файл.');return}
+   if(!TEXTS.includes(fext(f.name))){say('Нужен файл Excel (.xlsx, .xls) или CSV.');return}
+   if(f.size>2*1048576){say('Файл слишком большой для теста.');return}
+   fbusy=true;tu.disabled=true;say('Читаю файл…');
+   readTable(f).then(rows=>{const p=parseTest(rows);
+    if(p.err.length){fbusy=false;tu.disabled=false;say(p.err.slice(0,5).join(' ')+(p.err.length>5?' …и ещё ошибок: '+(p.err.length-5):''));return}
+    say('Загрузка… не закрывайте страницу.');
+    return api({action:'test_save',pin:PIN,module:c,title:t||f.name.replace(/\.[^.]+$/,''),q:p.q,by:U.name}).then(j=>{fbusy=false;
+     if(j.ok){TESTS.push(j.test);ls.s('shk_t',TESTS);tsel[c]=String(j.test.id);draw()}
+     else{tu.disabled=false;if(j.error=='pin'){setPin('');alert('Код редактора больше не подходит. Войдите заново.');draw()}else say(j.error=='size'?'Тест слишком большой.':'Ошибка загрузки.')}})})
+   .catch(e=>{fbusy=false;tu.disabled=false;say(e&&e.message=='xlsx'?'Не удалось открыть Excel-файл. Сохраните таблицу как CSV и загрузите снова.':e&&e.message=='read'?'Не удалось прочитать файл.':'Нет связи с сервером. Проверьте интернет и что опубликована новая версия скрипта.')})}}
+/* вкладка ТЕСТ: основной тест из блока «Данные» + загруженные со страницы; кнопка «Проверить знания», подсчёт и результат (блок .res) */
+function testTab(d,v){const c=code(d),list=TESTS.filter(t=>String(t.module)==c&&Array.isArray(t.q)&&t.q.length);
+  const main=d.q&&d.q.length;let T=list.find(t=>String(t.id)==tsel[c]);if(!T&&!main&&list.length)T=list[0];const Q=T?T.q:(d.q||[]),ty=T?'Тест: '+T.title:'Тест',X=T?esc:z=>z;
+  const chips=list.length>(main?0:1)?'<div class="chips" role="group" aria-label="Выбор теста">'+(main?[['','Основной тест']]:[]).concat(list.map(t=>[String(t.id),t.title])).map(x=>'<button type="button" aria-pressed="'+((T?String(T.id):'')==x[0])+'" data-ts="'+esc(x[0])+'">'+esc(x[1])+'</button>').join('')+'</div>':'';
+  if(!Q.length){v.innerHTML='<div class="empty">Тестов в этом модуле пока нет.</div>'+tedHtml(c,list);wireTests(v,c);return}
+  v.innerHTML=chips+Q.map((q,i)=>'<div class="q"><b>'+(i+1)+'. '+X(q[0])+'</b>'+q[1].map((o,j)=>'<label><input type="radio" name="q'+i+'" value="'+j+'"> '+X(o)+'</label>').join('')+'<div class="ex" hidden></div></div>').join('')+'<div id="r"></div><button class="btn" id="ck">Проверить знания</button>'+tedHtml(c,list);
+  v.querySelectorAll('[data-ts]').forEach(b=>b.onclick=()=>{tsel[c]=b.dataset.ts;draw()});
+  document.getElementById('ck').onclick=()=>{let s=0,un=0;const qs=v.querySelectorAll('.q:not(.fm)');qs.forEach(e=>{if(!e.querySelector('input:checked'))un++});
+   if(un){document.getElementById('r').innerHTML='<div class="res">Ответьте на все вопросы: не отвечено '+un+'.</div>';return}
+   qs.forEach((e,i)=>{const q=Q[i],k=+e.querySelector('input:checked').value;e.querySelectorAll('label').forEach((l,j)=>{if(j==q[2])l.classList.add('ok');else if(j==k)l.classList.add('no');l.querySelector('input').disabled=true});if(k==q[2])s++;const x=e.querySelector('.ex');x.hidden=false;x.textContent=(k==q[2]?'Верно. ':'Неверно. ')+q[3]});
+   const p=Math.round(s/Q.length*100);rec(d.n,ty,p);document.getElementById('r').innerHTML='<div class="res">Результат: <strong>'+s+' из '+Q.length+'</strong> ('+p+'%). '+(p==100?'Отлично, модуль освоен.':p>=70?'Хорошо, повторите ошибочные темы.':'Нужно повторить теорию и пройти тест снова.')+'</div>';
+   document.getElementById('ck').textContent='Пройти заново';document.getElementById('ck').onclick=draw;document.getElementById('r').scrollIntoView({behavior:'smooth'})};
+  wireTests(v,c)}
+/* ===== МИНИ-РАЗМЕТКА ТЕКСТА РАЗДЕЛОВ: Enter = новая строка, **жирный**, __курсив__ =====
+   В таблицу текст сохраняется в этом виде, на странице превращается в безопасный HTML. */
+const h2m=h=>String(h||'').replace(/<br\s*\/?>/gi,'\n').replace(/<\/?(b|strong)>/gi,'**').replace(/<\/?(i|em)>/gi,'__').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+const thumb=(id,w)=>'https://drive.google.com/thumbnail?id='+id+'&sz=w'+w;
+const isImg=f=>/^img_/.test(f.name||''); /* служебные файлы-картинки из текста разделов: в «Материалы» не показываем */
+/* [img:ID] в тексте раздела = картинка с Диска (маркер ставит кнопка «Добавить картинку») */
+const m2h=t=>{const im=[];let h=esc(t).replace(/\r?\n?\[img:([\w-]+)\]\r?\n?/g,(_,id)=>{im.push(id);return '\u0001'+(im.length-1)+'\u0001'});
+  h=h.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/__(.+?)__/g,'<i>$1</i>').replace(/\r?\n/g,'<br>');
+  return h.replace(/\u0001(\d+)\u0001/g,(_,i)=>'<img class="timg" src="'+thumb(im[+i],1200)+'" data-full="'+thumb(im[+i],2000)+'" alt="Иллюстрация" loading="lazy">')};
+const up=(a,x)=>{const i=a.findIndex(y=>String(y.id)==String(x.id));if(i<0)a.push(x);else a[i]=x;return a};
+const PENCIL='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>';
+
+/* подгрузка модулей и разделов, созданных на странице */
+function loadContent(){if(!CFG_URL)return;const was=JSON.stringify([MODS,TOPICS]);
+  fetch(CFG_URL+'?action=content').then(r=>r.json()).then(j=>{if(!j.ok)throw 0;MODS=j.modules||[];TOPICS=j.topics||[];ls.s('shk_m',MODS);ls.s('shk_tp',TOPICS)}).catch(()=>{})
+  .then(()=>{if(was==JSON.stringify([MODS,TOPICS])||!U)return;setD();renderTop();nav();if(!document.querySelector('dialog.dlg')&&!fbusy&&!document.querySelector('#v input:checked'))draw()})}
+
+/* ===== окно-форма (общее для отзыва и всех форм редактора) ===== */
+function closeDlg(){const d=document.querySelector('dialog.dlg');if(d)d.close()}
+function dlg(title,html,ready){closeDlg();const d=document.createElement('dialog');d.className='dlg';
+  d.innerHTML='<form method="dialog" class="dh"><h3>'+esc(title)+'</h3><button aria-label="Закрыть">×</button></form><div class="db">'+html+'</div>';
+  document.body.appendChild(d);d.addEventListener('close',()=>d.remove());d.addEventListener('click',e=>{if(e.target==d)d.close()});d.showModal();if(ready)ready(d);return d}
+/* действие редактора: отправка на сервер с кодом; say — куда писать ошибку, fail — что сделать при неудаче */
+function act(o,onok,say,fail){o.pin=PIN;o.by=U.name;
+  return api(o).then(j=>{if(j.ok)return onok(j);if(fail)fail();
+    if(j.error=='pin'){setPin('');closeDlg();nav();alert('Код редактора больше не подходит. Войдите заново.');draw()}
+    else if(say)say(j.error=='size'?'Слишком длинный текст.':j.error=='dup'?'Модуль с таким номером уже есть.':'Не удалось сохранить.');else alert('Не удалось выполнить действие.')})
+  .catch(()=>{if(fail)fail();say?say('Нет связи с сервером. Проверьте интернет и что опубликована новая версия скрипта.'):alert('Нет связи с сервером.')})}
+const dbtn=(id,t,cls)=>'<button class="'+(cls||'fbtn alt')+'" id="'+id+'" type="button">'+t+'</button>';
+
+/* ===== ОБРАТНАЯ СВЯЗЬ: сообщение попадает на лист «Обратная связь» ===== */
+function fbDlg(){const d0=view!='home'&&cur>=0&&D[cur]?D[cur]:null;let rate='';
+  dlg('Обратная связь','<label class="fl">О чём<select id="bt"><option>Отзыв о модуле</option><option>Нашёл(а) ошибку</option><option>Предложение</option><option>Вопрос</option><option>Другое</option></select></label>'
+   +'<div class="fl">Оценка (необязательно)<div class="chips rate">'+[1,2,3,4,5].map(n=>'<button type="button" aria-pressed="false" data-r="'+n+'">'+n+'</button>').join('')+'</div></div>'
+   +'<label class="fl">Сообщение<textarea id="bm" rows="5" maxlength="2000" placeholder="Что понравилось, что непонятно или что нужно исправить" autofocus></textarea></label>'
+   +'<div class="ex" style="margin:0 0 8px">Вместе с сообщением отправятся ваше имя, магазин'+(d0?' и название модуля «'+esc(d0.n)+'»':'')+'.</div>'
+   +'<div class="fmsg" id="bs" role="status"></div><div class="dact">'+dbtn('bg','Отправить','btn')+dbtn('bc','Отмена')+'</div>',dd=>{
+   const say=t=>dd.querySelector('#bs').textContent=t,bg=dd.querySelector('#bg');
+   dd.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{rate=rate==b.dataset.r?'':b.dataset.r;dd.querySelectorAll('[data-r]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.r==rate))});
+   dd.querySelector('#bc').onclick=()=>dd.close();
+   bg.onclick=()=>{const msg=dd.querySelector('#bm').value.trim();if(msg.length<3){say('Напишите сообщение.');return}
+    bg.disabled=true;say('Отправляю…');
+    api({action:'feedback',name:U.name,shop:U.shop,module:d0?d0.n:'',topic:dd.querySelector('#bt').value,rating:rate,message:msg}).then(j=>{
+     if(j.ok){dd.querySelector('.db').innerHTML='<div class="res" style="font-size:17px;margin-top:6px">Спасибо! Сообщение отправлено.</div><div class="dact">'+dbtn('bx','Закрыть','btn')+'</div>';dd.querySelector('#bx').onclick=()=>dd.close()}
+     else{bg.disabled=false;say('Не удалось отправить. Попробуйте позже.')}}).catch(()=>{bg.disabled=false;say('Нет связи с сервером. Текст сохранён в окне — попробуйте ещё раз.')})}})}
+document.getElementById('fbb').onclick=fbDlg;
+
+/* ===== ТЕОРИЯ: загруженные презентации сверху, затем разделы (из кода и добавленные на странице) ===== */
+function topicItems(d){const c=code(d),mine=TOPICS.filter(t=>String(t.module)==c),ov=k=>mine.find(t=>t.key&&t.key==k);
+  const a=d.th.map(t=>{const o=ov(t[0]);return{src:'code',key:t[0],oid:o?o.id:'',hasOv:!!o,hidden:!!(o&&o.del),titleH:o?esc(o.title):t[0],html:o?m2h(o.text):(t[1]||''),slides:t[2],rawTitle:o?o.title:h2m(t[0]),rawText:o?o.text:h2m(t[1])}});
+  const b=mine.filter(t=>!t.key).sort((x,y)=>Number(x.pos)-Number(y.pos)).map(t=>({src:'page',key:'',oid:t.id,hasOv:false,hidden:false,titleH:esc(t.title),html:m2h(t.text),slides:null,rawTitle:t.title,rawText:t.text}));
+  return a.concat(b)}
+function theoryTab(d,v){const c=code(d),files=FILES.filter(f=>String(f.module)==c&&f.place=='theory'),items=topicItems(d).filter(it=>PIN||!it.hidden),E=PIN&&CFG_URL;
+  const acts=(it,i)=>'<div class="tact">'+(it.hidden?'<button class="fbtn alt" type="button" data-ta="show" data-i="'+i+'">Показать</button>':'<button class="fbtn alt" type="button" data-ta="edit" data-i="'+i+'">Изменить текст</button>')
+   +(it.src=='page'?'<button class="fbtn del" type="button" data-ta="del" data-i="'+i+'">Удалить</button>':(it.hasOv?'<button class="fbtn alt" type="button" data-ta="reset" data-i="'+i+'">Вернуть исходный</button>':'')+(it.hidden?'':'<button class="fbtn del" type="button" data-ta="hide" data-i="'+i+'">Скрыть</button>'))+'</div>';
+  const fl=files.map((f,i)=>tcard(f,i==0)).join(''),sec=items.map((it,i)=>'<details'+(i==0?' open':'')+(it.hidden?' class="dim"':'')+'><summary>'+it.titleH+(it.hidden?' (скрыт)':'')+'</summary>'+(it.html?'<p>'+it.html+'</p>':'')+(it.slides&&it.slides.length?slides(it.slides):'')+(E?acts(it,i):'')+'</details>').join('');
+  v.innerHTML=(FERR&&CFG_URL?'<div class="empty" style="margin-bottom:10px">Не удалось загрузить презентации с сервера. Проверьте интернет и обновите страницу.'+(FWHY?'<br><small>Причина: '+esc(FWHY)+'</small>':'')+'</div>':'')+(fl?'<div class="th2"><aside class="thp" aria-label="Презентация">'+fl+'</aside><div class="ths">'+(sec||'<div class="empty">Текстовых разделов пока нет.</div>')+'</div></div>':(sec||'<div class="empty">В этом модуле пока нет теории.</div>'))+(E?'<div class="fa" style="margin:6px 0 12px">'+dbtn('tadd','+ Добавить раздел с текстом')+'</div>':'')+edHtml(c,'theory');
+  v.querySelectorAll('.sl').forEach(initSl);wireFiles(v,c,'theory');
+  const add=document.getElementById('tadd');if(add)add.onclick=()=>topicDlg(c,null);
+  v.querySelectorAll('[data-ta]').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.i],a=b.dataset.ta;
+   if(a=='edit')return topicDlg(c,it);
+   if(a=='del'){if(confirm('Удалить раздел «'+it.rawTitle+'»?'))topicDel(it.oid);return}
+   if(a=='reset'){if(confirm('Вернуть исходный текст раздела «'+it.rawTitle+'»? Ваши правки будут удалены.'))topicDel(it.oid);return}
+   topicPut({module:c,key:it.key,id:it.oid,title:it.rawTitle,text:it.rawText,del:a=='hide'})})}
+function topicPut(o,say,fail){return act(Object.assign({action:'topic_save'},o),j=>{TOPICS=up(TOPICS,j.topic);ls.s('shk_tp',TOPICS);closeDlg();draw()},say,fail)}
+function topicDel(id){return act({action:'topic_delete',id:id},()=>{TOPICS=TOPICS.filter(x=>String(x.id)!=String(id));ls.s('shk_tp',TOPICS);draw()})}
+function topicDlg(c,it){dlg(it?'Изменить раздел':'Новый раздел','<label class="fl">Название раздела<input id="dt" maxlength="200" autofocus></label><label class="fl">Текст<textarea id="dx" rows="10"></textarea></label>'
+   +'<div class="fl">Картинки<div class="ithumbs" id="di"></div><div class="dact" style="margin:0">'+dbtn('dp','+ Добавить картинку')+'</div><input type="file" id="df" accept="image/*" style="display:none"></div>'
+   +'<div class="ex" style="margin:0 0 8px">Новая строка — клавиша Enter. Выделение: **жирный**, __курсив__. Картинка появится в том месте текста, где стоял курсор; её можно перенести, вырезав и вставив строку вида [img:…]. Слайды у разделов из кода остаются как были.</div><div class="fmsg" id="dm" role="status"></div><div class="dact">'+dbtn('ds','Сохранить','btn')+dbtn('dc','Отмена')+'</div>',dd=>{
+   const t=dd.querySelector('#dt'),x=dd.querySelector('#dx'),say=z=>dd.querySelector('#dm').textContent=z,b=dd.querySelector('#ds');
+   t.value=it?it.rawTitle:'';x.value=it?it.rawText:'';dd.querySelector('#dc').onclick=()=>dd.close();
+   const di=dd.querySelector('#di'),dp=dd.querySelector('#dp'),df=dd.querySelector('#df');
+   const refresh=()=>{const ids=[...new Set((x.value.match(/\[img:[\w-]+\]/g)||[]).map(z=>z.slice(5,-1)))];
+    di.innerHTML=ids.map(id=>'<div class="ith"><img src="'+thumb(id,240)+'" alt=""><button type="button" data-rm="'+id+'" aria-label="Убрать картинку из текста">×</button></div>').join('')||'<div class="ex" style="margin:0">Картинок пока нет.</div>';
+    di.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{x.value=x.value.split('[img:'+b.dataset.rm+']').join('');refresh()})};
+   x.addEventListener('input',refresh);refresh();
+   dp.onclick=()=>df.click();
+   df.onchange=()=>{const f=df.files[0];df.value='';if(!f)return;if(f.size>25*1048576){say('Картинка больше 25 МБ — выберите поменьше.');return}
+    dp.disabled=true;b.disabled=true;say('Загружаю картинку…');
+    uploadImage(f,c).then(id=>{const p=x.selectionStart==null?x.value.length:x.selectionStart,bf=x.value.slice(0,p);x.value=bf+(bf&&!bf.endsWith('\n')?'\n':'')+'[img:'+id+']\n'+x.value.slice(p);refresh();say('Картинка добавлена. Не забудьте нажать «Сохранить».')})
+    .catch(e=>{if(e&&e.code=='pin'){setPin('');closeDlg();nav();alert('Код редактора больше не подходит. Войдите заново.');draw();return}say(e&&e.message=='img'?'Не удалось открыть картинку. Подойдут JPG, PNG, GIF, WebP.':e&&e.code=='type'?'Тип файла не разрешён.':e&&e.code?'Ошибка загрузки картинки.':'Нет связи с сервером. Проверьте интернет.')})
+    .then(()=>{dp.disabled=false;b.disabled=false})};
+   b.onclick=()=>{const ti=t.value.trim();if(!ti){say('Введите название раздела.');return}b.disabled=true;say('Сохраняю…');
+    topicPut({module:c,key:it&&it.src=='code'?it.key:'',id:it?it.oid:'',title:ti,text:x.value,del:false},say,()=>{b.disabled=false})}})}
+
+/* ===== КАРТИНКИ В РАЗДЕЛАХ: выбранный файл уменьшается до 1600 px, сохраняется как JPG и грузится на Диск (как обычный файл, но с именем img_…) ===== */
+function shrinkImage(f,max){return new Promise((ok,no)=>{const u=URL.createObjectURL(f),im=new Image();
+  im.onload=()=>{URL.revokeObjectURL(u);let w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)return no(new Error('img'));const k=Math.min(1,max/Math.max(w,h));w=Math.round(w*k);h=Math.round(h*k);
+   const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,w,h);x.drawImage(im,0,0,w,h);ok(c.toDataURL('image/jpeg',0.85).split(',')[1])};
+  im.onerror=()=>{URL.revokeObjectURL(u);no(new Error('img'))};im.src=u})}
+function uploadImage(f,c){return shrinkImage(f,1600).then(data=>api({action:'upload',pin:PIN,place:'files',module:c,title:'Картинка',name:'img_'+Date.now().toString(36)+'.jpg',mime:'image/jpeg',data:data,by:U.name}))
+  .then(j=>{if(!j.ok){const e=new Error(j.error||'x');e.code=j.error;throw e}if(j.shared===false)alert('Картинка загружена, но Google запретил общий доступ по ссылке. Другие пользователи её не увидят: проверьте настройки доступа Диска.');return j.file.fileId})}
+m.addEventListener('click',e=>{const i=e.target.closest&&e.target.closest('img.timg');if(i)dlg('','<img class="zimg" src="'+esc(i.dataset.full||i.src)+'" alt="">').classList.add('zoom')});
+
+/* ===== МОДУЛИ: создание, переименование, удаление на странице ===== */
+function moduleDlg(d){const ed=!!d;
+  dlg(ed?'Изменить модуль':'Новый модуль','<label class="fl">Номер модуля<input id="mc" maxlength="12" placeholder="например, 3.1"'+(ed?' disabled':' autofocus')+'></label><label class="fl">Название<input id="mn" maxlength="100" placeholder="например, Работа с жалобами"'+(ed?' autofocus':'')+'></label>'
+   +'<label class="fl">Раздел верхнего меню<select id="mr">'+ROLES.map(r=>'<option value="'+esc(r.id)+'">'+esc(r.t)+'</option>').join('')+'</select></label>'
+   +'<div class="ex" style="margin:0 0 8px">Теорию, тест, кейс и материалы добавляются после создания — прямо в модуле, в режиме редактора.</div><div class="fmsg" id="mm" role="status"></div><div class="dact">'+dbtn('ms',ed?'Сохранить':'Создать модуль','btn')+dbtn('mx','Отмена')+'</div>',dd=>{
+   const say=z=>dd.querySelector('#mm').textContent=z,b=dd.querySelector('#ms');
+   dd.querySelector('#mc').value=ed?d.cd:'';dd.querySelector('#mn').value=ed?d.ttl:'';dd.querySelector('#mr').value=ed?d.role:R;dd.querySelector('#mx').onclick=()=>dd.close();
+   b.onclick=()=>{const cd=dd.querySelector('#mc').value.trim(),ti=dd.querySelector('#mn').value.trim(),ro=dd.querySelector('#mr').value;
+    if(!ed&&!/^\d{1,3}(\.\d{1,3}){0,2}$/.test(cd)){say('Номер — цифры через точку, например 3.1.');return}
+    if(!ed&&D.some(x=>code(x)==cd)){say('Модуль с номером '+cd+' уже есть.');return}
+    if(!ti){say('Введите название модуля.');return}
+    b.disabled=true;say('Сохраняю…');
+    act(ed?{action:'module_save',id:d.id,title:ti,role:ro}:{action:'module_save',code:cd,title:ti,role:ro},j=>{MODS=up(MODS,j.module);ls.s('shk_m',MODS);
+     if(R!=j.module.role){R=j.module.role;ls.s('shk_r',R)}
+     setD(j.module.code+' '+j.module.title);view='mod';if(!ed)tab='th';closeDlg();renderTop();nav();draw();if(!ed)window.scrollTo({top:0})},say,()=>{b.disabled=false})}})}
+function moduleDel(d){if(!confirm('Удалить модуль «'+d.n+'»?\nМатериалы, тесты и разделы останутся в таблице, но на странице модуль пропадёт.'))return;
+  act({action:'module_delete',id:d.id},()=>{MODS=MODS.filter(x=>String(x.id)!=String(d.id));ls.s('shk_m',MODS);setD(null);tab='th';nav();draw()})}
+
+/* ===== КЕЙС (редактируется только у модулей, созданных на странице) ===== */
+function caseTab(d,v){const k=d.k,bar=PIN&&d.page&&CFG_URL?'<div class="tact">'+dbtn('ke',k?'Изменить кейс':'Добавить кейс')+'</div>':'';
+  const wire=()=>{const b=document.getElementById('ke');if(b)b.onclick=()=>caseDlg(d)};
+  if(!k){v.innerHTML='<div class="empty">Кейс для этого модуля пока не добавлен.</div>'+bar;wire();return}
+  v.innerHTML='<div class="sit"><b>Ситуация.</b> '+k[0]+'</div><b>Какое решение лучшее?</b><div style="margin-top:8px">'+k[1].map((o,i)=>'<label><input type="radio" name="k" value="'+i+'"> '+o[0]+'</label>').join('')+'</div><div id="r"></div><button class="btn" id="ck">Проверить решение</button>'+bar;
+  document.getElementById('ck').onclick=()=>{const c=v.querySelector('input:checked');if(!c){document.getElementById('r').innerHTML='<div class="res">Выберите вариант.</div>';return}
+   const o=k[1][+c.value];rec(d.n,'Кейс',o[1]?100:0);v.querySelectorAll('label').forEach((l,i)=>{if(k[1][i][1])l.classList.add('ok');else if(i==+c.value)l.classList.add('no');l.querySelector('input').disabled=true});
+   document.getElementById('r').innerHTML='<div class="res"><strong>'+(o[1]?'Верное решение':'Не лучший выбор')+'</strong><br>'+o[2]+(o[1]?'':'<br>Правильный ответ: '+k[1].find(x=>x[1])[0])+'</div>';document.getElementById('ck').style.display='none'};
+  wire()}
+function caseDlg(d){const K=d.kRaw,N=4;
+  dlg(K?'Изменить кейс':'Новый кейс','<label class="fl">Описание ситуации<textarea id="cs" rows="4" maxlength="1500" autofocus></textarea></label><div class="fl">Варианты решения: отметьте кружком верный (он должен быть один), пустые строки игнорируются</div>'
+   +Array.from({length:N},(_,i)=>'<div class="copt"><input type="radio" name="kc" value="'+i+'" aria-label="Верный вариант '+(i+1)+'"><div><input class="co" maxlength="500" placeholder="Вариант решения '+(i+1)+'"><input class="cx" maxlength="500" placeholder="Разбор: почему так"></div></div>').join('')
+   +'<div class="fmsg" id="cm" role="status"></div><div class="dact">'+dbtn('cv','Сохранить','btn')+dbtn('cc','Отмена')+'</div>',dd=>{
+   const say=z=>dd.querySelector('#cm').textContent=z,b=dd.querySelector('#cv'),rows=[...dd.querySelectorAll('.copt')];
+   if(K){dd.querySelector('#cs').value=K[0];K[1].slice(0,N).forEach((o,i)=>{rows[i].querySelector('.co').value=o[0];rows[i].querySelector('.cx').value=o[2];if(o[1])rows[i].querySelector('input[type=radio]').checked=true})}
+   dd.querySelector('#cc').onclick=()=>dd.close();
+   b.onclick=()=>{const sit=dd.querySelector('#cs').value.trim(),opts=[];let good=-1;
+    rows.forEach((r,i)=>{const t=r.querySelector('.co').value.trim();if(!t)return;const g=r.querySelector('input[type=radio]').checked;if(g)good=opts.length;opts.push([t,g?1:0,r.querySelector('.cx').value.trim()||(g?'Верное решение.':'Это не лучший вариант.')])});
+    if(!sit){say('Опишите ситуацию.');return}if(opts.length<2){say('Нужно минимум два варианта решения.');return}if(good<0){say('Отметьте верный вариант (кружок слева). Он должен быть заполнен.');return}
+    b.disabled=true;say('Сохраняю…');
+    act({action:'module_save',id:d.id,k:[sit,opts]},j=>{MODS=up(MODS,j.module);ls.s('shk_m',MODS);setD(d.n);closeDlg();draw()},say,()=>{b.disabled=false})}})}
+
+/* запоминаем раскрытые разделы теории, чтобы перерисовка (после правки, подгрузки данных) их не сворачивала */
+let LV='';
+const edBtn=()=>CFG_URL?'<button type="button" class="ghost'+(PIN?' on':'')+'" id="'+(PIN?'fx':'fe')+'" title="'+(PIN?'Выйти из режима редактора':'Режим редактора')+'">'+PENCIL+'<span>'+(PIN?'Выйти из редактора':'Режим редактора')+'</span></button>':'';
+/* ===== ГЛАВНАЯ: приветствие (текст меняет редактор), карточки разделов с прогрессом, «Продолжить» ===== */
+const WEL_T='Добро пожаловать в «Школу руководителя»',WEL_X='Здесь собраны материалы для обучения: теория, тесты, кейсы и дополнительные файлы.\nВыберите свой раздел и проходите модули в удобном темпе — результаты тестов сохраняются автоматически.';
+const HOW_T='Как проходить обучение';
+const HOW_X='1. Выберите свой раздел на карточках выше или в верхнем меню.\n2. Откройте модуль и изучите теорию: раскрывайте разделы, смотрите презентации и картинки.\n3. Во вкладке «Тест» ответьте на вопросы. Для зачёта нужно набрать не меньше '+PASS+'%, тест можно пройти заново.\n4. Во вкладке «Кейс» выберите лучшее решение рабочей ситуации.\n5. Дополнительные файлы лежат во вкладке «Материалы».\n6. Есть вопрос или нашли ошибку? Напишите нам через кнопку «Оставить отзыв» внизу страницы.';
+/* что нового: модули, разделы, презентации/материалы и тесты, добавленные за последние 60 дней (до 5 штук) */
+function newsItems(){const out=[],lim=Date.now()-60*864e5,has=c=>D.some(x=>code(x)==String(c)),
+   add=(date,txt,c)=>{const t=Date.parse(date);if(t>lim&&has(c))out.push({t:t,txt:txt,c:String(c)})};
+  MODS.forEach(m=>add(m.date,'Новый модуль «'+m.title+'»',m.code));
+  TOPICS.filter(t=>t.module!='_home'&&!t.key&&!t.del).forEach(t=>add(t.date,'Новый раздел «'+t.title+'»',t.module));
+  FILES.filter(f=>fok(f)&&!isImg(f)).forEach(f=>add(f.date,(f.place=='theory'?'Новая презентация':'Новый материал')+' «'+f.title+'»',f.module));
+  TESTS.forEach(t=>add(t.date,'Новый тест «'+t.title+'»',t.module));
+  return out.sort((a,b)=>b.t-a.t).slice(0,5)}
+function homeView(){const parts=U.name.trim().split(/\s+/),nm=parts[1]||parts[0],w=TOPICS.find(t=>String(t.module)=='_home'&&t.key=='welcome'),
+   title=w?w.title:WEL_T,text=w?w.text:WEL_X,li=D.findIndex(x=>x.n==ls.g('shk_last','')),E=PIN&&CFG_URL,total=D.length;
+  const cards=ROLES.map(r=>{const l=inRole(r.id),n=l.length,done=l.filter(i=>passed(D[i])).length,off=!n&&!PIN;
+   return '<button type="button" class="hcard" data-hr="'+esc(r.id)+'"'+(off?' disabled':'')+'><b>'+esc(r.t)+'</b><span>'+(n?'Модулей: '+n+' · пройдено: '+done:'Материалы готовятся')+'</span>'+(n?'<div class="hbar" aria-hidden="true"><i style="width:'+Math.round(done/n*100)+'%"></i></div>':'')+'</button>'}).join('');
+  const nw=newsItems(),seen=+ls.g('shk_seen',0),hw=TOPICS.find(t=>String(t.module)=='_home'&&t.key=='howto'),hT=hw?hw.title:HOW_T,hX=hw?hw.text:HOW_X;
+  const newsBox=nw.length?'<section class="hbox"><h3>Новое в школе</h3><ul class="hnews">'+nw.map(n=>'<li><button type="button" data-hm="'+esc(n.c)+'"><time datetime="'+new Date(n.t).toISOString()+'">'+esc(new Date(n.t).toLocaleDateString('ru-RU',{day:'numeric',month:'long'}))+'</time><span>'+esc('Модуль '+n.c+' · '+n.txt)+(n.t>seen?'<span class="hnew">новое</span>':'')+'</span></button></li>').join('')+'</ul></section>':'';
+  const howBox=(hX.trim()||E)?'<section class="hbox"><h3>'+esc(hT)+'</h3><p>'+(hX.trim()?m2h(hX):'')+'</p>'+(E?'<div class="tact">'+dbtn('hhow','Изменить инструкцию')+'</div>':'')+'</section>':'';
+  document.body.classList.add('home');m.innerHTML='<section class="hhero"><h1>Здравствуйте,<br>'+esc(nm)+'!</h1><img src="60.png" alt=""></section><div class="hpanel"><div class="hwel"><h2>'+esc(title)+'</h2><p>'+m2h(text)+'</p>'
+   +(li>=0&&roleOf(D[li])?'<button type="button" class="btn" id="hc">Продолжить: Модуль '+esc(D[li].n)+'</button>':'')
+   +(E&&!total?'<p class="ex" style="margin-top:12px">Режим редактора: откройте раздел ниже и нажмите «+ Модуль», чтобы создать первый модуль.</p>':'')
+   +(E?'<div class="tact">'+dbtn('hed','Изменить приветствие')+'</div>':'')+'</div>'
+   +'<div class="hcards" role="group" aria-label="Разделы">'+cards+'</div>'
+   +((newsBox||howBox)?'<div class="hrow'+(newsBox&&howBox?'':' one')+'">'+newsBox+howBox+'</div>':'')+(edBtn()?'<div class="tabs" style="margin-top:10px">'+edBtn()+'</div>':'')+'</div>';
+  m.querySelectorAll('[data-hr]').forEach(b=>b.onclick=()=>goRole(b.dataset.hr));
+  const hc=document.getElementById('hc');if(hc)hc.onclick=()=>goModule(D[li].n);
+  const he=document.getElementById('hed');if(he)he.onclick=()=>topicDlg('_home',{src:'code',key:'welcome',oid:w?w.id:'',rawTitle:title,rawText:text});
+  m.querySelectorAll('[data-hm]').forEach(b=>b.onclick=()=>goCode(b.dataset.hm));
+  const hh=document.getElementById('hhow');if(hh)hh.onclick=()=>topicDlg('_home',{src:'code',key:'howto',oid:hw?hw.id:'',rawTitle:hT,rawText:hX});
+  wireAuth()}
+
+function draw(){
+  if(view=='home'){homeView();return}
+  document.body.classList.remove('home');
+  const key=cur+'|'+tab,sm=x=>x.textContent,keep=key==LV&&tab=='th'&&document.querySelector('#v details')?{all:[...document.querySelectorAll('#v details summary')].map(sm).join('\n'),open:[...document.querySelectorAll('#v details[open] summary')].map(sm)}:null;LV=key;
+  const ed=edBtn();
+  if(cur<0){m.innerHTML='<h2>'+esc(ROLES.find(r=>r.id==R).t)+'</h2><div class="empty">Материалы этого раздела готовятся. Загляните позже.</div>'+(ed?'<div class="tabs" style="margin-top:14px">'+ed+'</div>':'');wireAuth();return}
+  const d=D[cur];ls.s('shk_last',d.n);m.innerHTML='<h2>Модуль '+nh(d)+'</h2>'+(PIN&&CFG_URL&&d.page?'<div class="mbar"><button type="button" class="ghost" id="me">Изменить модуль</button><button type="button" class="ghost" id="md">Удалить модуль</button></div>':'')
+   +'<div class="tabs" role="tablist">'+[['th','Теория'],['t','Тест'],['k','Кейс'],['f','Материалы']].map(x=>'<button role="tab" aria-selected="'+(tab==x[0])+'" data-t="'+x[0]+'">'+x[1]+'</button>').join('')+ed+'</div><div id="v"></div>';
+  m.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw();if(tab=='f')loadFiles();if(tab=='t')loadTests()});
+  wireAuth();
+  const me=document.getElementById('me'),md=document.getElementById('md');if(me)me.onclick=()=>moduleDlg(d);if(md)md.onclick=()=>moduleDel(d);
+  const v=document.getElementById('v');
+  if(tab=='f')fileTab(d,v);
+  if(tab=='th'){theoryTab(d,v);if(keep&&keep.all==[...v.querySelectorAll('details summary')].map(sm).join('\n'))v.querySelectorAll('details').forEach(x=>{x.open=keep.open.includes(x.querySelector('summary').textContent)})}
+  if(tab=='t')testTab(d,v);
+  if(tab=='k')caseTab(d,v)}
+start();
+</script></body></html>
