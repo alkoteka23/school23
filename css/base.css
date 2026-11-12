@@ -1,0 +1,302 @@
+/* ===== BASE: сброс, типографика, кнопки, формы, модальные окна ===== */
+
+body {
+  margin: 0;
+   background: #FAF5EE; /* Теплый кремовый фон как на макете */
+  min-height: 100vh;
+  color: var(--tx);
+  font: 16px/1.55 "Golos Text", "PT Sans", system-ui, sans-serif;
+}
+
+h1 {
+  font: 700 clamp(34px, 7vw, 60px)/1.1 "PT Serif", Georgia, serif;
+  margin: 0;
+  color: #ffffff;
+}
+
+h2 {
+  font: 700 21px/1.25 "PT Serif", Georgia, serif;
+  margin: 8px 0 12px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ac);
+  outline-offset: 2px;
+}
+
+/* ===== ЕДИНЫЙ СТИЛЬ КНОПОК (как в верхнем меню) ===== */
+.btn, .fbtn, nav button, .tabs button, .chips button, .swap, .roles button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: none;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ac);
+  background: transparent;
+  color: var(--ac);
+  font: 700 15px/1 "Golos Text", "PT Sans", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s, color .15s, transform .1s;
+}
+
+.btn:active, .fbtn:active, nav button:active, .tabs button:active, .chips button:active, .swap:active, .roles button:active {
+  transform: scale(.97);
+}
+
+.btn:disabled, .fbtn:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+nav button:hover, .tabs button:hover, .chips button:hover, .fbtn.alt:hover {
+  background: rgba(78, 15, 26, .08);
+}
+
+.btn, .fbtn, nav button[aria-current=true], .tabs button[aria-selected=true], .chips button[aria-pressed=true] {
+  background: var(--ac);
+  color: var(--sf);
+}
+
+.btn:hover, .fbtn:hover, nav button[aria-current=true]:hover, .tabs button[aria-selected=true]:hover, .chips button[aria-pressed=true]:hover {
+  background: #6a1a28;
+}
+
+.fbtn.alt {
+  background: transparent;
+  color: var(--ac);
+}
+
+.fbtn.del {
+  background: transparent;
+  color: #B3261E;
+  border-color: #B3261E;
+}
+
+.fbtn.del:hover {
+  background: rgba(179, 38, 30, .08);
+}
+
+/* Кнопки внутри верхнего меню (на тёмном фоне) */
+.roles button {
+  min-height: 40px;
+  padding: 0 13px;
+  font-size: 14px;
+  border-color: rgba(255, 255, 255, .28);
+  color: #fff;
+}
+
+.roles button:hover {
+  background: rgba(255, 255, 255, .14);
+}
+
+.roles button[aria-current=true] {
+  background: #FAF5EE;
+  color: #4E0F1A;
+  border-color: #FAF5EE;
+}
+
+.swap {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  background: #FAF5EE;
+  color: #4E0F1A;
+  font-size: 13px;
+}
+
+.swap:hover {
+  background: #fff;
+}
+
+.swap:focus-visible, .roles button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ===== Модальные окна ===== */
+dialog.dlg {
+  border: 0;
+  border-radius: 14px;
+  padding: 0;
+  width: min(560px, calc(100% - 24px));
+  max-height: calc(100% - 24px);
+  background: var(--sf);
+  color: var(--tx);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .35);
+}
+
+dialog.dlg::backdrop {
+  background: rgba(30, 6, 10, .55);
+}
+
+.dh {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 6px;
+  margin: 0;
+}
+
+.dh h3 {
+  margin: 0;
+  font: 700 19px/1.25 "PT Serif", Georgia, serif;
+}
+
+.dh button {
+  border: 0;
+  background: transparent;
+  color: var(--mu);
+  font: 400 28px/1 "Golos Text", "PT Sans", sans-serif;
+  cursor: pointer;
+  padding: 0 6px;
+}
+
+.db {
+  padding: 6px 16px 16px;
+  overflow: auto;
+  max-height: calc(100vh - 110px);
+}
+
+.dlg label.fl, .dlg div.fl {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  margin: 0 0 10px;
+  cursor: default;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.dlg input:not([type=radio]), .dlg textarea, .dlg select {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  font: 400 16px/1.4 "Golos Text", "PT Sans", sans-serif;
+  color: var(--tx);
+  background: var(--sf);
+}
+
+.dlg textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.dlg input:disabled {
+  opacity: .6;
+}
+
+.dact {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* ===== Поля ввода ===== */
+.fm input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin: 0 0 10px;
+  border: 1px solid var(--bd);
+  border-radius: 6px;
+  font: inherit;
+  color: var(--tx);
+  background: var(--sf);
+}
+
+.fm select {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(78, 15, 26, .3);
+  background: var(--sf);
+  font: inherit;
+}
+
+.fm textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(78, 15, 26, .3);
+  background: var(--sf);
+  font: inherit;
+}
+
+/* Кнопка «Выберите файл» */
+input[type=file]::file-selector-button {
+  margin-right: 12px;
+  padding: 9px 16px;
+  border: 1px solid var(--ac);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ac);
+  font: 700 14px/1 "Golos Text", "PT Sans", sans-serif;
+  cursor: pointer;
+}
+
+input[type=file]::file-selector-button:hover {
+  background: rgba(78, 15, 26, .08);
+}
+
+/* Картинки, которые открываются на весь экран */
+dialog.dlg.zoom {
+  width: auto;
+  max-width: calc(100% - 24px);
+}
+
+.zimg {
+  display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 130px);
+  margin: 0 auto;
+  border-radius: 6px;
+}
+
+/* Служебные классы */
+.fmsg {
+  min-height: 20px;
+  font-size: 14px;
+  margin: 0 0 8px;
+  color: var(--mu);
+}
+
+.dim {
+  opacity: .55;
+}
+
+.ex {
+  font-size: 14px;
+  color: var(--mu);
+  margin-top: 6px;
+}
+/* Кнопка перехода к тесту в теории */
+.theory-next-btn {
+  width: 100%;
+  margin-top: 24px;
+  padding: 14px;
+  font-size: 16px;
+  background: var(--fx);
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(194,81,31,0.25);
+  transition: background 0.2s;
+}
+.theory-next-btn:hover { background: var(--fx2); }
