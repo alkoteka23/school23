@@ -1525,7 +1525,7 @@ nav button[aria-current=true][data-st]{background:var(--ac);color:var(--sf);bord
 }
 
 .tour-img-wrap img {
-  width: 170px;       /* Фиксируем ширину */
+  width: 80px;       /* Фиксируем ширину */
   height: auto;
   display: block;
   object-fit: contain;
